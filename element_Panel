@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Tampering Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 300px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Buy Product</h2>
+    <p><strong>Item:</strong> iPhone 16</p>
+    <p><strong>Price:</strong> ₹99999</p>
+
+    <!-- Hidden field that stores the price -->
+    <form action="#" method="POST" onsubmit="showMessage(event)">
+      <input type="hidden" name="price" value="99999">
+      <button type="submit">Buy Now</button>
+    </form>
+
+    <p style="font-size: 0.9em; color: gray; margin-top: 10px;">
+      Try: Right-click → Inspect → Elements panel → change the hidden field value.
+    </p>
+
+    <div id="message" style="margin-top:15px; color:green; font-weight:bold;"></div>
+  </div>
+
+  <script>
+    function showMessage(e) {
+      e.preventDefault();
+      const price = document.querySelector('input[name="price"]').value;
+      document.getElementById('message').innerText =
+        `Form submitted with price = ₹${price}`;
+    }
+  </script>
+
+</body>
+</html>
