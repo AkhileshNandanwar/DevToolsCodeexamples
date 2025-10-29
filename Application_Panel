@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Application Panel — Token Demo</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial; padding: 40px; background: #fafafa; }
+    .card { background: white; border-radius: 10px; padding: 24px; max-width: 480px; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    input { padding: 8px; width: 100%; margin: 6px 0; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #28a745; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #218838; }
+    #result { margin-top: 15px; font-weight: bold; color: green; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Login (Demo)</h2>
+    <p>Enter any username and password:</p>
+    <input id="user" placeholder="Username" />
+    <input id="pass" placeholder="Password" type="password" />
+    <button onclick="login()">Login</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    function login() {
+      const username = document.getElementById('user').value;
+      const password = document.getElementById('pass').value;
+
+      // Simulated authentication (for demo only)
+      if (username && password) {
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo.fake.token123"; // looks like a JWT
+        localStorage.setItem("authToken", token);
+        document.getElementById('result').innerText = "✅ Logged in! Token stored in browser.";
+      } else {
+        document.getElementById('result').innerText = "❌ Enter username & password.";
+      }
+    }
+  </script>
+</body>
+</html>
