@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Sources Panel — Runtime Editing Demo</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; background: #fafafa; }
+    .card { background: white; border-radius: 10px; padding: 24px; max-width: 480px; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    input { padding: 8px; width: 100%; margin: 6px 0; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #007bff; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #result { margin-top: 15px; font-weight: bold; color: green; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Loan Application (Demo)</h2>
+    <p>Enter your salary to check eligibility:</p>
+    <input id="salary" type="number" value="40000" />
+    <button onclick="checkEligibility()">Check Eligibility</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    // --- Vulnerable client-side logic (for demo only) ---
+    function checkEligibility() {
+      const salary = Number(document.getElementById('salary').value);
+      let approved = false;
+
+      // Client-side check — easy to tamper with via Sources panel
+      if (salary >= 50000) {
+        approved = true;
+      }
+
+      if (approved) {
+        document.getElementById('result').innerText = "✅ Loan Approved!";
+      } else {
+        document.getElementById('result').innerText = "❌ Loan Rejected. Minimum salary ₹50,000 required.";
+      }
+    }
+  </script>
+</body>
+</html>
