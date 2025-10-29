@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Console Monkeypatch Demo</title>
+  <style>
+    body { font-family: Arial; padding: 40px; max-width:600px; margin:auto; }
+    .card { border:1px solid #ddd; padding:18px; border-radius:8px; }
+    .hint { color:#666; font-size:0.9rem; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Checkout (Demo)</h2>
+    <p>Product: SuperWidget — <strong>Price: ₹1,00,000</strong></p>
+
+    <form id="checkout" onsubmit="return validateAndSubmit(event)">
+      <input type="hidden" name="productId" value="widget-001" />
+      <input type="hidden" name="price" value="100000" />
+      <label>
+        Promo code: <input name="promo" id="promo" />
+      </label><br/><br/>
+      <button type="submit">Pay Now</button>
+    </form>
+
+    <div id="result" style="margin-top:12px; color:green; font-weight:600"></div>
+    <p class="hint">
+      Tip: Open DevTools → Console. You can call or override functions here.
+    </p>
+  </div>
+
+  <script>
+    // A client-side validation routine (for demo only).
+    // Insecure if server trusts it.
+    window.validateAndSubmit = function (e) {
+      e.preventDefault();
+      const price = document.querySelector('input[name="price"]').value;
+      const promo = document.querySelector('input[name="promo"]').value.trim();
+
+      // Client-side discount logic
+      let final = Number(price);
+      if (promo === 'LUCKY50') {
+        final = final * 0.5;
+      }
+
+      // Simulate sending to server by showing result
+      document.getElementById('result').innerText = `Client would send price = ₹${final}`;
+      return false;
+    };
+  </script>
+</body>
+</html>
