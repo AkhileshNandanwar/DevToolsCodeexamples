@@ -2,90 +2,91 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Network Panel — Request Tampering Demo</title>
+  <title>Secure Checkout (Demo)</title>
   <style>
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f5f7fa;
-      padding: 40px;
+      font-family: Arial, sans-serif;
+      background: #f6f8fb;
+      padding: 24px;
     }
     .card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      max-width: 480px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 450px;
       margin: auto;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      color: #333;
-      margin-bottom: 12px;
-    }
-    p {
-      color: #555;
-      margin-bottom: 10px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     button {
       background: #007bff;
       color: white;
-      padding: 10px 16px;
       border: none;
+      padding: 10px 14px;
       border-radius: 6px;
-      font-size: 16px;
       cursor: pointer;
-      width: 100%;
+      font-size: 16px;
     }
     button:hover {
       background: #0056b3;
     }
-    #result {
-      margin-top: 15px;
+    pre {
+      background: #eef6ff;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    #status {
+      margin-top: 12px;
       font-weight: bold;
-      color: #2c7a00;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>Loan Application (Network Demo)</h2>
-    <p>Enter your salary to check loan eligibility:</p>
-    <input id="salary" type="number" placeholder="Enter your monthly salary" value="40000" />
-    <button onclick="checkEligibility()">Check Eligibility</button>
-    <p id="result"></p>
+    <h2>Secure Checkout</h2>
+    <p><strong>Product:</strong> SuperWidget</p>
+    <p>Server controls the actual price — not stored in form.</p>
+
+    <label>Quantity: 
+      <input id="qty" type="number" value="1" min="1" style="width:60px;" />
+    </label><br><br>
+
+    <button onclick="createOrder()">Create Order</button>
+
+    <p id="status"></p>
+
+    <h4>Demo Notes:</h4>
+    <pre>
+Client sends: { productId: "widget-001", qty: 1 }
+Server computes: total = db.price * qty
+    </pre>
   </div>
 
   <script>
-    async function checkEligibility() {
-      const salary = document.getElementById("salary").value;
-      document.getElementById("result").innerText = "⏳ Checking eligibility...";
+    async function createOrder() {
+      const qty = Number(document.getElementById('qty').value) || 1;
+      const payload = { productId: 'widget-001', qty };
 
-      // Simulated API call
-      const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ salary: salary })
-      });
+      document.getElementById('status').innerText = '⏳ Sending order to server...';
 
-      // Simulate backend decision logic
-      const data = await response.json();
-      const approved = salary >= 50000;
+      try {
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      setTimeout(() => {
-        if (approved) {
-          document.getElementById("result").innerText = "✅ Loan Approved!";
+        if (res.ok) {
+          document.getElementById('status').innerText =
+            '✅ Request sent — server decides final price securely.';
         } else {
-          document.getElementById("result").innerText = "❌ Loan Rejected. Minimum salary ₹50,000 required.";
+          document.getElementById('status').innerText = '❌ Request failed.';
         }
-      }, 1000);
+      } catch (e) {
+        document.getElementById('status').innerText = '⚠️ Error: ' + e.message;
+      }
     }
   </script>
 </body>
 </html>
+
