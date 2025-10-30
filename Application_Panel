@@ -36,6 +36,15 @@
       } else {
         document.getElementById('result').innerText = "❌ Enter username & password.";
       }
+fetch('https://httpbin.org/anything', {
+  method: 'POST',
+  headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + localStorage.getItem('authToken') },
+  body: JSON.stringify({demo:true})
+}).then(r=>r.json()).then(j=>console.log(j.headers));
+
+Promise {<pending>}
+VM1437:5 {Accept: '*/*', Accept-Encoding: 'gzip, deflate, br, zstd', Accept-Language: 'en-US,en;q=0.9', Authorization: 'Bearer abcd.defg', Content-Length: '13', …}
+
     }
   </script>
 </body>
