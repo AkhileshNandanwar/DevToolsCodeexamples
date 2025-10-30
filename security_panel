@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Security Panel Demo — HTTPS, Mixed Content & CSP</title>
+
+  <!-- CSP for demo:
+       - default-src 'self' (only allow same-origin by default)
+       - img-src https: data: (only load images over HTTPS or data: URIs)
+       - script-src 'self' 'unsafe-inline' (allow inline scripts for demo, but block external cross-origin scripts)
+       Note: this meta tag demonstrates blocking of cross-origin external scripts and http images (when page is HTTPS).
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src https: data:; script-src 'self' 'unsafe-inline';">
+
+  <style>
+    body { font-family: "Segoe UI", Roboto, Arial; background:#f7fafc; padding:28px; }
+    .card { background: #fff; border-radius:10px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,0.06); max-width:840px; margin: auto; }
+    h1 { margin:0 0 8px; font-size:20px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+    button { padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; background:#2563eb; color:#fff; cursor:pointer; }
+    pre { background:#f1f5f9; padding:12px; border-radius:8px; white-space:pre-wrap; font-size:13px; }
+    .small { font-size:13px; color:#555; margin-top:8px; }
+    .log { margin-top:12px; background:#0f172a; color:#fff; padding:10px; border-radius:6px; font-family:monospace; font-size:13px; max-height:220px; overflow:auto; }
+    label { display:block; margin-top:12px; font-weight:600; }
+    #insecureImg { max-width:200px; margin-top:8px; border:1px dashed #e5e7eb; padding:6px; border-radius:6px; background:#fff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔐 Security Panel Demo — HTTPS, Mixed Content & CSP</h1>
+    <p class="small">
+      This page demonstrates common browser security controls. Open DevTools → <strong>Security</strong> to inspect certificate info,
+      and DevTools → <strong>Console / Network</strong> to view blocking events. For full mixed-content blocking, serve this page over <strong>HTTPS</strong>.
+    </p>
+
+    <div class="row">
+      <button id="checkProtocolBtn">Check HTTPS status</button>
+      <button id="loadHttpImageBtn">Try load HTTP image (mixed content)</button>
+      <button id="loadBlockedScriptBtn">Try load blocked external script (CSP)</button>
+      <button id="clearLogBtn" style="background:#ef4444">Clear log</button>
+    </div>
+
+    <label>Protocol / Security</label>
+    <pre id="protocolInfo">Press <strong>Check HTTPS status</strong></pre>
+
+    <label>Mixed content demo (image)</label>
+    <div class="small">Click the button to try loading an <code>http://</code> image. If this page is served over HTTPS, the browser will block it.</div>
+    <img id="insecureImg" alt="insecure image placeholder" src="" />
+
+    <label>Logs (CSP violations, mixed content blocks, errors)</label>
+    <div id="log" class="log">Console will show CSP or mixed-content events here.</div>
+
+    <label>Notes</label>
+    <pre>
+Tips for demo:
+• Open DevTools → Security to inspect TLS certificate (subject, issuer, validity).
+• Mixed content (loading http: resources on an https: page) is blocked by modern browsers.
+• CSP (Content-Security-Policy) blocks resources that are not allowed by policy. Violations fire 'securitypolicyviolation' events and appear in Console.
+• To test mixed-content blocking properly, serve this file over HTTPS (localhost with a dev cert or a hosted HTTPS URL).
+    </pre>
+  </div>
+
+  <script>
+    const logEl = document.getElementById('log');
+    function appendLog(...args) {
+      const txt = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+      const line = document.createElement('div');
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${txt}`;
+      logEl.prepend(line);
+      console.log(...args);
+    }
+
+    // 1) Protocol / security check
+    document.getElementById('checkProtocolBtn').addEventListener('click', () => {
+      const p = location.protocol; // 'https:' or 'http:' or 'file:'
+      appendLog('Location protocol =', p);
+      let msg = `Protocol: ${p}\nHost: ${location.host}\nOrigin: ${location.origin}`;
+      if (p === 'https:') {
+        msg += '\n\nThis page is loaded over HTTPS — check DevTools → Security for certificate details.';
+      } else if (p === 'http:') {
+        msg += '\n\nThis page is loaded over HTTP — mixed content will behave differently; upgrade to HTTPS for secure behavior.';
+      } else {
+        msg += '\n\nNon-HTTP protocol (file:// or others) — results may vary.';
+      }
+      document.getElementById('protocolInfo').textContent = msg;
+    });
+
+    // 2) Mixed content demo: try to load an HTTP image
+    document.getElementById('loadHttpImageBtn').addEventListener('click', () => {
+      const img = document.getElementById('insecureImg');
+      const httpImageUrl = 'http://httpbin.org/image/png'; // example HTTP image (may or may not be available)
+      appendLog('Attempting to load HTTP image:', httpImageUrl);
+      img.src = httpImageUrl;
+
+      // attach load/error listeners to show result
+      img.onload = () => appendLog('Insecure image loaded successfully (browser allowed it).');
+      img.onerror = (e) => appendLog('Insecure image failed to load or was blocked by the browser.', e && e.type);
+    });
+
+    // 3) CSP demo: try to load an external script from a different origin
+    document.getElementById('loadBlockedScriptBtn').addEventListener('click', () => {
+      const badScript = document.createElement('script');
+      // External script (cross-origin) — blocked by CSP script-src 'self'
+      badScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js';
+      badScript.onload = () => appendLog('External script loaded (unexpected).');
+      badScript.onerror = (e) => appendLog('External script failed to load or was blocked.', e && e.type);
+      document.body.appendChild(badScript);
+      appendLog('Inserted external script tag (should be blocked by CSP if policy enforces it).');
+    });
+
+    // 4) Listen for CSP violation events (securitypolicyviolation)
+    document.addEventListener('securitypolicyviolation', (ev) => {
+      // event fields: blockedURI, violatedDirective, originalPolicy, etc.
+      appendLog('CSP Violation detected — directive:', ev.violatedDirective, 'blockedURI:', ev.blockedURI || '(inline/unknown)');
+      appendLog({ violatedDirective: ev.violatedDirective, blockedURI: ev.blockedURI, originalPolicy: ev.originalPolicy });
+    });
+
+    // Also listen globally for resource loading errors (mixed content may show here)
+    window.addEventListener('error', (ev) => {
+      // resource errors have ev.target (img/script) while runtime errors have message
+      if (ev.target && (ev.target.tagName === 'IMG' || ev.target.tagName === 'SCRIPT' || ev.target.tagName === 'LINK')) {
+        appendLog('Resource error (possible block):', ev.target.tagName, ev.target.src || ev.target.href);
+      } else {
+        // runtime JS error
+        appendLog('Runtime error:', ev.message || ev);
+      }
+    }, true);
+
+    // Clear log
+    document.getElementById('clearLogBtn').addEventListener('click', () => { logEl.innerHTML = ''; appendLog('Log cleared'); });
+
+    // Initial info
+    appendLog('Demo loaded. CSP meta policy (for demo): default-src \'self\'; img-src https: data:; script-src \'self\' \'unsafe-inline\'.');
+    appendLog('Try: Check HTTPS status → Load HTTP image → Load blocked script → Open DevTools → Security/Console to observe behavior.');
+  </script>
+</body>
+</html>
