@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Leak Demo</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+      width: 400px;
+      text-align: center;
+    }
+    button {
+      margin: 10px;
+      padding: 10px;
+      width: 80%;
+      border-radius: 6px;
+      border: none;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #container {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 100px;
+      border-radius: 6px;
+    }
+    #log {
+      margin-top: 15px;
+      color: #555;
+      font-size: 14px;
+      text-align: left;
+      width: 80%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🧠 Memory Leak Demo</h2>
+    <p>Click buttons to create and remove elements.<br>
+    Then check the Memory Panel for leaks.</p>
+    <button onclick="createElements()">Create Elements</button>
+    <button onclick="removeElements()">Remove Elements</button>
+    <button onclick="clearReferences()">Clear References</button>
+    <div id="container"></div>
+    <div id="log"></div>
+  </div>
+
+  <script>
+    let leakyList = [];
+
+    function createElements() {
+      const container = document.getElementById('container');
+      for (let i = 0; i < 1000; i++) {
+        const div = document.createElement('div');
+        div.textContent = "Leaky Element #" + i;
+        container.appendChild(div);
+        leakyList.push(div); // ⚠️ stored reference causes leak
+      }
+      log("✅ 1000 elements created and stored in memory.");
+    }
+
+    function removeElements() {
+      const container = document.getElementById('container');
+      container.innerHTML = ''; // removes visually
+      log("⚠️ Elements removed from DOM, but still in memory!");
+    }
+
+    function clearReferences() {
+      leakyList = []; // remove stored references
+      log("🧹 References cleared — memory can now be reclaimed!");
+    }
+
+    function log(message) {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML += `<p>${message}</p>`;
+    }
+  </script>
+</body>
+</html>
